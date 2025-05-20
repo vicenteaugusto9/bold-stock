@@ -5,7 +5,7 @@ const Header = ({logo,iconInstagram,iconLinkedin,iconGithub}) => {
     return ( 
 
         <>
-            <div className="flex border-b-blue-500 rounded-sm p-3  items-center  justify-evenly  " >
+            <div className="flex border-b-blue-500 rounded-sm p-3 bg-gray-50  items-center  justify-evenly flex-wrap " >
 
                 
                 <div className="flex align-center items-center gap-1.5">
