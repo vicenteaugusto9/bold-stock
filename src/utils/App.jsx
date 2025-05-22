@@ -3,6 +3,7 @@ import Header from '../components/header/header'
 import './global.css'
 import { Icons } from '../constants/icons'
 import DashBoardCard from '../components/dashboardCard/daschBoardCard'
+import GraficoDashBoard from '../components/GraficoDashBoard/Grafico'
 
 function App() {
   
@@ -27,6 +28,10 @@ function App() {
   vendasTotal= "35.100,00"
   
   />
+  </div>
+  <div className="p-4">
+    <GraficoDashBoard/>
+
   </div>
   
  </>
