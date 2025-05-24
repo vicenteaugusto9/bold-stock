@@ -4,12 +4,17 @@ import './global.css'
 import { Icons } from '../constants/icons'
 import DashBoardCard from '../components/dashboardCard/daschBoardCard'
 import GraficoDashBoard from '../components/GraficoDashBoard/Grafico'
+import SideBar from '../components/SideBar/SideBar'
 
 function App() {
   
 
   return (
  <>
+ <div className="w-full  flex ">
+   <SideBar/>
+    <div className="flex flex-col">
+
   <Header
   logo={Icons.Logo}
   iconLinkedin={Icons.Linkedin}
@@ -34,6 +39,8 @@ function App() {
 
   </div>
   
+  </div>
+  </div>
  </>
   )
 }
