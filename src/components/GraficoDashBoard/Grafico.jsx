@@ -12,7 +12,7 @@ from "recharts"
 const dados =[
         {nome: 'jan', vendas: 400},
         {nome: 'Fev', vendas: 150},
-        {nome: 'Mac', vendas: 550},
+        {nome: 'Mar', vendas: 550},
         {nome: 'Abr', vendas: 1200},
         {nome: 'Mai', vendas: 700},
         {nome: 'Jun', vendas: 900},

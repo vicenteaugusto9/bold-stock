@@ -1,6 +1,7 @@
 import { Icons } from "../../constants/icons";
 import { User,ArrowDown,ChevronDown} from "lucide-react";
 import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
+import UserMenu from "../UserMenu/UserMenu";
 
 
 const Header = ({users}) => {
@@ -8,10 +9,8 @@ const Header = ({users}) => {
 
         <>
         <div className="flex  justify-end items-center pr-10 p-2">
-            <div className="flex items-center justify-end border gap-2 p-2 rounded-lg w-60 " >
-                <User className="w-5 h-5"/>
-                <p>{users}</p>
-                <ChevronDown className="w-5 h-5"/>
+            <div className="flex items-center border gap-2 p-2 rounded-lg w-45cursor-pointer" >
+               <UserMenu className="cursor-pointer"/>
             </div>
         </div>
 
