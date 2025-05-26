@@ -13,9 +13,9 @@ function App() {
         <SideBar />
         <div className="flex flex-col w-full ">
           <Header users="Administrador" />
-          <div className="flex gap-12 flex-wrap justify-center items-center pt-3">
-            <DashBoardCard titleCard="Vendas Do Dia " vendasTotal="1.250,00" />
-            <DashBoardCard titleCard="Vendas Do Mes " vendasTotal="35.100,00" />
+          <div className="flex gap-12 flex-wrap items-center  p-4">
+            <DashBoardCard  />
+           
           </div>
           <div className="p-4">
             <GraficoDashBoard />
