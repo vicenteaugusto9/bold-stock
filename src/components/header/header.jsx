@@ -9,7 +9,7 @@ const Header = ({users}) => {
 
         <>
         <div className="flex  justify-end items-center pr-10 p-2">
-            <div className="flex items-center border gap-2 p-2 rounded-lg w-45cursor-pointer" >
+            <div className="flex items-center border gap-2  rounded-lg w-45cursor-pointer" >
                <UserMenu className="cursor-pointer"/>
             </div>
         </div>
