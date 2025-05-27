@@ -38,11 +38,87 @@ const DashBoardCard = ({ titleCard, vendasTotal }) => {
     },[])
   return (<>
   
-    <div className="space-y-66">
+    <div className="space-y-6">
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground">Visão geral do seu negócio</p>
         </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle  className="text-sm font-medium">Vendas Totais</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+
+            <CardContent>
+              <div className="text-2xl font-bold">{vendasData.total}</div>
+              <div  className="flex items-center text-xs text-muted-foreground">{vendasData.change > 0 ? (
+                <>
+                <TrendingUp className="mr-1 h-4 w-4 text-emerald-500"/>
+                <span className="text-emerald-500">{vendasData.change}%</span>
+                </>
+              ):(
+                <>
+                  <TrendingDown className="mr-1 h-4 w-4 text-red-500"/>
+                  <span  className="text-red-500">{Math.abs(vendasData.change)}%</span>
+                </>
+              )}
+                <span  className="ml-1">em relação ao mês anterior</span>
+              </div>
+
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle  className="text-sm font-medium">Produtos em estoque</CardTitle>
+              <Package  className="h-4 w-4 text-muted-foreground"/>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{inventarioStock.total}</div>
+              <div  className="flex items-center text-xs text-muted-foreground">{inventarioStock.change > 0 ? (
+                <>
+                <TrendingUp className="mr-1 h-4 w-4 text-emerald-500"/>
+                <span className="text-emerald-500">{inventarioStock.change}%</span>
+                </>
+
+              ):(
+                <>
+                <TrendingDown className="mr-1 h-4 w-4 text-red-500"/>
+                <span className="text-red-500">{Math.abs(inventarioStock.change)}%</span>
+                
+                </>
+               
+              )}
+              <span className="ml-1">em relação ao mês anterior</span>
+              </div>
+            </CardContent>
+          </Card>
+           <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">R$ {receitaStock.total.toLocaleString("pt-BR")}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              {receitaStock.change > 0 ? (
+                <>
+                  <TrendingUp className="mr-1 h-4 w-4 text-emerald-500" />
+                  <span className="text-emerald-500">{receitaStock.change}%</span>
+                </>
+              ) : (
+                <>
+                  <TrendingDown className="mr-1 h-4 w-4 text-red-500" />
+                  <span className="text-red-500">{Math.abs(receitaStock.change)}%</span>
+                </>
+              )}
+              <span className="ml-1">em relação ao mês anterior</span>
+            </div>
+          </CardContent>
+        </Card>
+        </div>
+        
     </div>
   
   
