@@ -51,7 +51,7 @@ Desenvolvido com foco em usabilidade, organização de dados e visual moderno.
 
 ## 📸 Prints
 
-> ![Dashboard exemplo](./prints/dashboard-metricas.pn)
+> ![Dashboard exemplo](../bold-stock/src/assets/telaDash.png)
 > ![Dashboard gráfico](./prints/dashboard-grafico.png)
 
 ---
