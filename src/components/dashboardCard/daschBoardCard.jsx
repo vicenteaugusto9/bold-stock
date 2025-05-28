@@ -37,8 +37,8 @@ const DashBoardCard = ({}) => {
         //Dados ficticios
 
         setProdutosStockItems([
-            { id: 1, nome: "Camisa Lacoste", estoque: 5, minestoque: 10 },
-            { id: 2, nome: "Bermuda Bransk", estoque: 8, minestoque: 10 },
+            { id: 1, nome: "Camisa Lacoste", estoque: 15, minestoque: 10 },
+            { id: 2, nome: "Bermuda Bransk", estoque: 18, minestoque: 10 },
             { id: 3, nome: "Calca MR2", estoque: 23, minestoque: 10 },
         ]);
         setVendasDatas({ total: 159, change: 12.5 });
@@ -156,7 +156,7 @@ const DashBoardCard = ({}) => {
                         </Link>
                     </Button>
                 </div>
-                {produtosStockItems.length > 0 ? (
+                {produtosStockItems.length < 10 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {produtosStockItems.map((item) => (
                             <Alert
@@ -169,9 +169,7 @@ const DashBoardCard = ({}) => {
                                 <AlertDescription className="mt-2">
                                     <div className="text-sm text-red-600">
                                         Estoque atual:{" "}
-                                        <span className="font-bold">{item.estoque}</span> de{" "}
-                                     
-                                        {item.minestoque} mínimo
+                                        <span className="font-bold">{item.estoque}</span> de {item.minestoque} mínimo
                                     </div>
                                     <Progress
                                         

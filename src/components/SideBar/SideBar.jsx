@@ -3,7 +3,7 @@ import { Box,Settings,ShoppingCart,Archive,BarChart,LayoutDashboard} from "lucid
 const SideBar = () => {
     return ( <>
     
-        <aside className="h-screen w-60 bg-white  p-4 space-y-2">
+        <aside className="h-screen  w-60 bg-white  p-4 space-y-2">
             <div className="flex items-center ">
 
                 <div className="flex items-center  gap-2 text-2xl font-bold text-green-600">
