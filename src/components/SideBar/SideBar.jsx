@@ -1,45 +1,40 @@
-import { Box,Settings,ShoppingCart,Archive,BarChart,LayoutDashboard} from "lucide-react";
+import { Box, Settings, ShoppingCart, Archive, BarChart, LayoutDashboard } from "lucide-react";
 
 const SideBar = () => {
-    return ( <>
-    
-        <aside className="h-screen  w-60 bg-white  p-4 space-y-2">
-            <div className="flex items-center ">
-
-                <div className="flex items-center  gap-2 text-2xl font-bold text-green-600">
-                <Box className="w-6 h-6"/>
-                    <span className="text-black">Bold Stock</span>
-                </div>
+    return (
+        <aside className="sidebar">
+            <div className="sidebar-brand">
+                <Box className="sidebar-icon" />
+                <span>Bold Stock</span>
             </div>
-            <nav className="mt-6 space-y-1 text-gray-700 border-t border-r h-screen ">
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 font-semibold">
-                    <LayoutDashboard className="w-5 h-5  "/>
+            <nav className="sidebar-nav">
+                <div className="sidebar-link sidebar-link-active">
+                    <LayoutDashboard className="sidebar-icon" />
                     Dashboard
-                </div> 
-                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100  ">
-                    <Archive className="w-5 h-5 "/>
+                </div>
+                <div className="sidebar-link">
+                    <Archive className="sidebar-icon" />
                     Estoque
                 </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 ">
-                    <BarChart className="w-5 h-5 "/>
+                <div className="sidebar-link">
+                    <BarChart className="sidebar-icon" />
                     Relatórios
                 </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 ">
-                    <ShoppingCart className="w-5 h-5 "/>
+                <div className="sidebar-link">
+                    <ShoppingCart className="sidebar-icon" />
                     Vendas
                 </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 ">
-                    <Box className="w-5 h-5 "/>
+                <div className="sidebar-link">
+                    <Box className="sidebar-icon" />
                     Produtos
                 </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 ">
-                    <Settings className="w-5 h-5 "/>
-                    Configuracoes
+                <div className="sidebar-link">
+                    <Settings className="sidebar-icon" />
+                    Configurações
                 </div>
             </nav>
         </aside>
-    
-    </> );
+    );
 }
  
 export default SideBar;

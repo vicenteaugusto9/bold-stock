@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from 'react-router-dom'; // Importar os componentes de roteamento
 import Header from "../components/header/header";
-import "./global.css";
 import DashBoardCard from "../components/dashboardCard/daschBoardCard";
 import GraficoDashBoard from "../components/GraficoDashBoard/Grafico";
 import SideBar from "../components/SideBar/SideBar";
@@ -11,10 +10,10 @@ function App() {
   return (
     // BrowserRouter envolve toda a aplicação para habilitar o roteamento
     <BrowserRouter>
-      <div className="flex w-max justify-center ">
+      <div className="app-root">
         {/* SideBar e Header são componentes de layout que aparecem em todas as páginas */}
         <SideBar />
-        <div className="flex flex-col w-full">
+        <div className="app-content">
           <Header users="Administrador" />
           
           <Routes>
@@ -22,7 +21,7 @@ function App() {
             <Route
               path="/"
               element={
-                <div className="flex gap-12 flex-wrap items-center p-4">
+                <div className="home-grid">
                   <DashBoardCard />
                   {/* GraficoDashBoard também faz parte da página inicial */}
                 

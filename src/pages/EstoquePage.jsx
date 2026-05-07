@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 
 const EstoquePage = () => {
     return (
-        <div className="p-6 space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">Página de Estoque</h1>
-            <p className="text-muted-foreground">Aqui você poderá gerenciar seus produtos em estoque.</p>
+        <div className="page-shell">
+            <h1 className="page-title">Página de Estoque</h1>
+            <p className="page-description">Aqui você poderá gerenciar seus produtos em estoque.</p>
 
             <Card>
                 <CardHeader>
@@ -16,7 +16,7 @@ const EstoquePage = () => {
                 </CardHeader>
                 <CardContent>
                     <p>Conteúdo da página de estoque será adicionado aqui.</p>
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2 text-sm muted-text">
                         Você pode começar a adicionar tabelas de produtos, filtros e outras funcionalidades aqui.
                     </p>
                 </CardContent>
