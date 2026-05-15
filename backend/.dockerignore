@@ -1,0 +1,50 @@
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Prisma
+prisma/migrations/dev_*
+prisma/migrations/migration_lock.toml
+
+# Tests
+.nyc_output/
+coverage/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# README and docs
+README.md
+*.md

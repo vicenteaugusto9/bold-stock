@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  VENDEDOR
+  ESTOQUISTA
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      Role       @default(VENDEDOR)
+  sales     Sale[]     // Histórico de vendas do vendedor
+  logs      AuditLog[]
+}
+
+model Customer {
+  id       String @id @default(uuid())
+  name     String
+  document String @unique
+  sales    Sale[]
+}
+
+model Product {
+  id         String     @id @default(uuid())
+  name       String
+  price      Decimal    // Preço de venda
+  costPrice  Decimal    // Essencial para o ADM ver o lucro
+  stock      Int
+  saleItems  SaleItem[] 
+}
+
+model Sale {
+  id         String     @id @default(uuid())
+  customer   Customer   @relation(fields: [customerId], references: [id])
+  customerId String
+  user       User       @relation(fields: [userId], references: [id]) // NOVO: Quem vendeu?
+  userId     String
+  total      Decimal
+  status     String     // "COMPLETO", "CANCELADO"
+  items      SaleItem[]
+  createdAt  DateTime   @default(now())
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  sale      Sale    @relation(fields: [saleId], references: [id]) // Corrigido 'fields'
+  saleId    String
+  product   Product @relation(fields: [productId], references: [id]) // Adicionada relação
+  productId String
+  quantity  Int
+  price     Decimal // Preço fixado no momento da venda
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String   // Corrigido para camelCase consistente
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  details   Json
+  createdAt DateTime @default(now())
+}

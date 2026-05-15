@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Banco de dados PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: bold-stock-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bold_stock}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bold-stock-network
+
+  # Aplicação Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bold-stock-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-bold_stock}
+      PORT: 3000
+      NODE_ENV: ${NODE_ENV:-development}
+    ports:
+      - "3000:3000"
+    volumes:
+      # Para desenvolvimento - comentar em produção
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+    networks:
+      - bold-stock-network
+    command: npm run dev
+
+  # Prisma Studio (para visualizar o banco de dados)
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bold-stock-prisma-studio
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-bold_stock}
+    ports:
+      - "5555:5555"
+    networks:
+      - bold-stock-network
+    command: npx prisma studio
+    profiles:
+      - studio
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  bold-stock-network:
+    driver: bridge

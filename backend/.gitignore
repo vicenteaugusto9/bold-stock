@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.*.example
+
+# Build output
+dist/
+build/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Prisma
+prisma/migrations/
+prisma/dev.db
+prisma/dev.db-journal
+/src/generated/
+
+# Docker volumes
+postgres_data/
+
+# Tests
+coverage/
+.nyc_output/
+*.coverage
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# System
+.env.local
+.env.*.local
+.cache/
