@@ -2,32 +2,37 @@ import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
 
 interface Payload {
-    sub: string; // ID do usuário
+    sub: string;
+    role: string; // ✅ adicionado
 }
 
-interface AuthenticatedRequest extends Request {
-    user_id: string; // ID do usuário extraído do token
-} 
+// ✅ Extende o tipo do Express globalmente — sem 'as any'
+declare global {
+    namespace Express {
+        interface Request {
+            user_id: string;
+            user_role: string; // ✅ role disponível em todas as rotas
+        }
+    }
+}
 
 export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+    const authToken = req.headers.authorization;
 
-  const authToken = req.headers.authorization;
+    if (!authToken) {
+        return res.status(401).json({ error: 'Token não fornecido' });
+    }
 
-  if (!authToken) {
-    return res.status(401).json({ error: 'Token de autenticação nao fornecido' });
-  }
+    const [, token] = authToken.split(' ');
 
-  const [, token] = authToken.split(' ');
+    try {
+        const { sub, role } = verify(token, process.env.JWT_SECRET as string) as Payload;
 
-  try {
-    const {sub} = verify(token, process.env.JWT_SECRET as string) as Payload;
-  
-    (req as any).user_id = sub; // Armazenamos o ID do usuário na requisição para uso posterior
+        req.user_id = sub;
+        req.user_role = role; // ✅ disponível nas rotas
 
-    return next(); // Se o token for válido, passamos para a próxima função de middleware ou rota
-
-  }
-  catch (err) {
-    return res.status(401).json({ error:'Token de autenticação invalido' });
-  }
+        return next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Token inválido' });
+    }
 }
