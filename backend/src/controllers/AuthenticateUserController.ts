@@ -1,26 +1,22 @@
-import { Request ,Response } from "express";
-import {AuthenticateUserService}  from "../services/AuthenticateUserService";
-
+import { Request, Response } from "express";
+import { AuthenticateUserService } from "../services/AuthenticateUserService";
 
 export class AuthenticateUserController {
+    
+    private authenticateUserService = new AuthenticateUserService();
+
     async handle(req: Request, res: Response) {
         const { email, password } = req.body;
 
-        // Criar uma instância do serviço de autenticação
-        const authenticateUserService = new AuthenticateUserService();
+        if (!email || !password) {
+            return res.status(400).json({ error: "Email e senha são obrigatórios" });
+        }
 
         try {
-            // Chamar o método execute do serviço de autenticação
-            const result = await authenticateUserService.execute({
-                 email,
-                 password 
-                });
-
-            // Retornar a resposta com os dados do usuário e o token
-                return res.status(200).json(result);
-
+            const result = await this.authenticateUserService.execute({ email, password });
+            return res.status(200).json(result);
         } catch (error: any) {
-            return res.status(401).json({ error: error.message });      
+            return res.status(401).json({ error: error.message });
         }
-     }
+    }
 }

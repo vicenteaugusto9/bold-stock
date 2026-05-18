@@ -1,20 +1,17 @@
-import { Router, Request, Response, RequestHandler } from "express"; // Importamos o RequestHandler para tipar a função de rota
+import { Router } from "express";
 import userRoutes from "./user.routes";
-import { AuthenticateUserController } from "../controllers/AuthenticateUserController";
-import { isAuthenticated } from "../middleware/auth"; // Se a sua pasta for middleware, mantenha assim
+import authRoutes from "./auth.routes";
+import { isAuthenticated } from "../middleware/auth";
+import { MeController } from "../controllers/meController";
 
 const routes = Router();
-const authenticateUserController = new AuthenticateUserController();
+const meController = new MeController();
 
-routes.use('/users', userRoutes);
-routes.post('/sessions', authenticateUserController.handle);
+// Rotas públicas
+routes.use('/sessions', authRoutes);
 
-// O PULO DO GATO: Tipamos a função inteira como RequestHandler, aí você não precisa tipar req e res no braço!
-routes.get('/me', isAuthenticated, ((req, res) => {
-  return res.json({    
-    message: 'Você está autenticado no Bold Stock!',
-    userId: (req as any).user_id // Fazemos o cast do any direto no req aqui dentro
-  });
-}) as RequestHandler);
+// Rotas protegidas
+routes.use('/users', isAuthenticated, userRoutes);
+routes.get('/me', isAuthenticated, meController.handle);
 
 export default routes;

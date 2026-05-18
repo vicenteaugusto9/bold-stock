@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -9,11 +6,43 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// ──────────────── ENUMS ────────────────
+
 enum Role {
   ADMIN
   VENDEDOR
   ESTOQUISTA
 }
+
+enum SaleStatus {
+  PENDING     // aguardando pagamento
+  CONFIRMED   // pagamento confirmado
+  CANCELLED   // cancelado
+}
+
+enum PaymentMethod {
+  PIX
+  CARD
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REFUNDED
+}
+
+enum MovementType {
+  ENTRY       // entrada de mercadoria
+  EXIT        // saída por venda
+  RESERVE     // soft lock
+  RELEASE     // liberação de reserva
+  ADJUSTMENT  // ajuste manual
+}
+
+// ──────────────── MODELS ────────────────
 
 model User {
   id        String     @id @default(uuid())
@@ -21,53 +50,103 @@ model User {
   email     String     @unique
   password  String
   role      Role       @default(VENDEDOR)
-  sales     Sale[]     // Histórico de vendas do vendedor
+  sales     Sale[]
   logs      AuditLog[]
+  createdAt DateTime   @default(now())
 }
 
 model Customer {
-  id       String @id @default(uuid())
-  name     String
-  document String @unique
-  sales    Sale[]
+  id        String   @id @default(uuid())
+  name      String
+  document  String   @unique  // CPF ou CNPJ
+  email     String?  @unique
+  phone     String?
+  sales     Sale[]
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  products Product[]
 }
 
 model Product {
   id         String     @id @default(uuid())
   name       String
-  price      Decimal    // Preço de venda
-  costPrice  Decimal    // Essencial para o ADM ver o lucro
-  stock      Int
-  saleItems  SaleItem[] 
+  sku        String     @unique  // código único do produto
+  price      Decimal              // preço de venda
+  costPrice  Decimal              // preço de custo (margem de lucro)
+  unit       String     @default("UN")  // UN, KG, CX...
+  active     Boolean    @default(true)
+  categoryId String
+  category   Category   @relation(fields: [categoryId], references: [id])
+  stock      Stock?
+  saleItems  SaleItem[]
+  createdAt  DateTime   @default(now())
+}
+
+model Stock {
+  id        String          @id @default(uuid())
+  productId String          @unique
+  product   Product         @relation(fields: [productId], references: [id])
+  available Int             @default(0)  // disponível para venda
+  reserved  Int             @default(0)  // aguardando pagamento (soft lock)
+  movements StockMovement[]
+  updatedAt DateTime        @updatedAt
+}
+
+model StockMovement {
+  id            String       @id @default(uuid())
+  stockId       String
+  stock         Stock        @relation(fields: [stockId], references: [id])
+  type          MovementType
+  quantity      Int
+  correlationId String?      // liga ao pedido que gerou a movimentação
+  createdAt     DateTime     @default(now())
 }
 
 model Sale {
-  id         String     @id @default(uuid())
-  customer   Customer   @relation(fields: [customerId], references: [id])
-  customerId String
-  user       User       @relation(fields: [userId], references: [id]) // NOVO: Quem vendeu?
-  userId     String
-  total      Decimal
-  status     String     // "COMPLETO", "CANCELADO"
-  items      SaleItem[]
-  createdAt  DateTime   @default(now())
+  id            String      @id @default(uuid())
+  customerId    String
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  status        SaleStatus  @default(PENDING)
+  total         Decimal
+  correlationId String      @unique @default(uuid()) // rastreia todo o fluxo
+  items         SaleItem[]
+  payment       Payment?
+  createdAt     DateTime    @default(now())
 }
 
 model SaleItem {
   id        String  @id @default(uuid())
-  sale      Sale    @relation(fields: [saleId], references: [id]) // Corrigido 'fields'
   saleId    String
-  product   Product @relation(fields: [productId], references: [id]) // Adicionada relação
+  sale      Sale    @relation(fields: [saleId], references: [id])
   productId String
+  product   Product @relation(fields: [productId], references: [id])
   quantity  Int
-  price     Decimal // Preço fixado no momento da venda
+  price     Decimal // preço fixado no momento da venda
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  saleId         String        @unique
+  sale           Sale          @relation(fields: [saleId], references: [id])
+  method         PaymentMethod
+  status         PaymentStatus @default(PENDING)
+  idempotencyKey String        @unique // evita cobrança duplicada
+  amount         Decimal
+  createdAt      DateTime      @default(now())
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
-  userId    String   // Corrigido para camelCase consistente
-  user      User     @relation(fields: [userId], references: [id])
-  action    String
-  details   Json
-  createdAt DateTime @default(now())
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  action        String   // SALE_CREATED, STOCK_RESERVED, PAYMENT_CONFIRMED...
+  correlationId String?  // liga todos os logs de uma mesma operação
+  details       Json
+  createdAt     DateTime @default(now())
 }
