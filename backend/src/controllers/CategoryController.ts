@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { CategoryService } from "../services/CategorySevice";
-import { error } from "node:console";
+
 
 export class CategoryController {
     private categoryService: CategoryService;
