@@ -4,6 +4,6 @@ import { AuthenticateUserController } from "../controllers/AuthenticateUserContr
 const authRoutes = Router();
 const authenticateUserController = new AuthenticateUserController();
 
-authRoutes.post('/', authenticateUserController.handle);
+authRoutes.post('/', authenticateUserController.handle.bind(authenticateUserController)); 
 
 export default authRoutes;
