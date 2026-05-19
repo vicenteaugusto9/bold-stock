@@ -1,6 +1,6 @@
 import prisma from "../lib/prisma";
 import { Decimal } from "../generated/prisma/runtime/client";
-import { error } from "node:console";
+
 
 interface CreateProductDTO {
     name: string ;
@@ -170,7 +170,7 @@ export class ProductService {
             throw new Error(" produto ja esta inativo ")
         }
 
-        const updated = prisma.product.update({
+        const updated = await prisma.product.update({
             where:{id},
             data: {active:false},
             select:{
