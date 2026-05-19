@@ -4,6 +4,11 @@ import authRoutes from "./auth.routes";
 import { isAuthenticated } from "../middleware/auth";
 import { MeController } from "../controllers/meController";
 import categoryRoutes from "./category.routes";
+import productRoutes from "./product.routes";
+
+
+
+
 const routes = Router();
 const meController = new MeController();
 
@@ -14,5 +19,6 @@ routes.use('/sessions', authRoutes);
 routes.use('/users', isAuthenticated, userRoutes);
 routes.get('/me', isAuthenticated, meController.handle);
 routes.use('/categories',categoryRoutes)
+routes.use('/products',productRoutes)
 
 export default routes;
