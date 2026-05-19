@@ -104,6 +104,29 @@ export class ProductService {
         
     }
 
+    async findById(id: string){
+        const product = await prisma.product.findUnique({
+            where:{id},
+            select:{
+                id: true,
+                name: true,
+                sku: true,
+                price: true,
+                costPrice: true,
+                unit: true,
+                active: true,
+                category: { select: { id: true, name: true } },
+                stock: { select: { available: true, reserved: true } }
+            }
+        })
+
+        if (!product){
+            throw new Error("produto nao encontrado")
+        }
+
+        return {data: product, message:'Produto encotrado'}
+    }
+
     async update(id:string , data: Partial <CreateProductDTO>){
         const product = await prisma.product.findUnique({
             where : {id}
