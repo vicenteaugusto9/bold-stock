@@ -61,6 +61,7 @@ model Customer {
   document  String   @unique  // CPF ou CNPJ
   email     String?  @unique
   phone     String?
+  active    Boolean  @default(true)
   sales     Sale[]
   createdAt DateTime @default(now())
 }
