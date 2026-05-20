@@ -5,6 +5,7 @@ import { isAuthenticated } from "../middleware/auth";
 import { MeController } from "../controllers/meController";
 import categoryRoutes from "./category.routes";
 import productRoutes from "./product.routes";
+import customerRoutes from "./customer.routes";
 
 
 
@@ -20,5 +21,6 @@ routes.use('/users', isAuthenticated, userRoutes);
 routes.get('/me', isAuthenticated, meController.handle);
 routes.use('/categories',categoryRoutes)
 routes.use('/products',productRoutes)
+routes.use('/customers',customerRoutes)
 
 export default routes;
