@@ -6,6 +6,7 @@ import { MeController } from "../controllers/meController";
 import categoryRoutes from "./category.routes";
 import productRoutes from "./product.routes";
 import customerRoutes from "./customer.routes";
+import stockRoutes from "./stock.routes";
 
 
 
@@ -22,5 +23,6 @@ routes.get('/me', isAuthenticated, meController.handle);
 routes.use('/categories',categoryRoutes)
 routes.use('/products',productRoutes)
 routes.use('/customers',customerRoutes)
+routes.use('/stock', stockRoutes);
 
 export default routes;
