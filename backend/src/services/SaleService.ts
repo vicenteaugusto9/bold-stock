@@ -1,6 +1,9 @@
 import prisma from '../lib/prisma';
 import { AppError } from '../shared/errors';
 import { StockService } from '../services/Stockservice';
+import { AuditLogService } from './AuditLogService';
+
+const auditLogService = new AuditLogService();
 
 const stockService = new StockService();
 
@@ -123,9 +126,20 @@ export class SaleService {
                     }
                 });
             }
-
+            
             return newSale;
         });
+        await auditLogService.log({
+             userId,
+             action: 'SALE_CREATED',
+             correlationId: sale.correlationId,
+             details: {
+              saleId: sale.id,
+              total: sale.total,
+              itemCount: items.length
+               }    
+
+            });
 
         return { data: sale, message: "Venda criada e estoque reservado" };
     }
@@ -196,6 +210,16 @@ export class SaleService {
 
             return payment;
         });
+            await auditLogService.log({
+                userId: sale.userId,
+                action: 'PAYMENT_CONFIRMED',
+                correlationId: sale.correlationId,
+                details: {
+                    paymentId: result.id,
+                    method,
+                    amount: sale.total
+    }
+});
 
         return { data: result, message: "Pagamento confirmado e estoque baixado" };
     }
@@ -250,7 +274,14 @@ export class SaleService {
                     }
                 });
             }
-        });
+        }); 
+        
+        await auditLogService.log({
+                userId: sale.userId,
+                action: 'SALE_CANCELLED',
+                correlationId: sale.correlationId,
+                details: { saleId }
+            });
 
         return { data: null, message: "Venda cancelada e estoque liberado" };
     }

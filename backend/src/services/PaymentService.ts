@@ -1,5 +1,8 @@
 import prisma from '../lib/prisma';
 import { AppError } from '../shared/errors';
+import { AuditLogService } from './AuditLogService';
+
+const auditLogService = new AuditLogService
 
 interface ProcessPaymentDTO {
     saleId: string;
@@ -137,7 +140,17 @@ export class PaymentService {
                     }
                 });
             }
-        });
+        }); 
+        await auditLogService.log({
+    userId: payment.sale.userId,
+    action: 'PAYMENT_REFUNDED',
+    correlationId: payment.sale.correlationId,
+    details: {
+        paymentId,
+        amount: payment.amount
+    }
+});
+        
 
         return { data: null, message: "Pagamento estornado e estoque devolvido" };
     }
