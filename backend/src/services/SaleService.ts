@@ -1,11 +1,8 @@
 import prisma from '../lib/prisma';
 import { AppError } from '../shared/errors';
-import { StockService } from '../services/Stockservice';
 import { AuditLogService } from './AuditLogService';
 
 const auditLogService = new AuditLogService();
-
-const stockService = new StockService();
 
 interface CreateSaleDTO {
     customerId: string;
@@ -26,7 +23,6 @@ export class SaleService {
 
     async create({ customerId, userId, items }: CreateSaleDTO) {
 
-        // ✅ Valida cliente
         const customer = await prisma.customer.findUnique({
             where: { id: customerId }
         });
@@ -35,7 +31,6 @@ export class SaleService {
             throw new AppError("Cliente não encontrado", 404);
         }
 
-        // ✅ Valida vendedor
         const user = await prisma.user.findUnique({
             where: { id: userId }
         });
@@ -44,7 +39,6 @@ export class SaleService {
             throw new AppError("Usuário não encontrado", 404);
         }
 
-        // ✅ Valida todos os produtos antes de qualquer movimentação
         const productIds = items.map(i => i.productId);
         const products = await prisma.product.findMany({
             where: { id: { in: productIds }, active: true },
@@ -55,7 +49,6 @@ export class SaleService {
             throw new AppError("Um ou mais produtos não encontrados ou inativos", 404);
         }
 
-        // ✅ Valida estoque de todos os itens antes de reservar qualquer um
         for (const item of items) {
             const product = products.find(p => p.id === item.productId);
             if (!product?.stock || product.stock.available < item.quantity) {
@@ -66,7 +59,6 @@ export class SaleService {
             }
         }
 
-        // ✅ Calcula o total
         const total = items.reduce((acc, item) => {
             const product = products.find(p => p.id === item.productId)!;
             return acc + Number(product.price) * item.quantity;
@@ -74,7 +66,7 @@ export class SaleService {
 
         const correlationId = crypto.randomUUID();
 
-        // ✅ Cria a venda, itens e reserva o estoque em transação
+        // ✅ Transaction apenas com operações críticas do banco
         const sale = await prisma.$transaction(async (tx) => {
             const newSale = await tx.sale.create({
                 data: {
@@ -97,9 +89,7 @@ export class SaleService {
                 include: {
                     items: {
                         include: {
-                            product: {
-                                select: { id: true, name: true, sku: true }
-                            }
+                            product: { select: { id: true, name: true, sku: true } }
                         }
                     },
                     customer: { select: { id: true, name: true, document: true } },
@@ -107,14 +97,13 @@ export class SaleService {
                 }
             });
 
-            // ✅ Reserva estoque de cada item (soft lock)
             for (const item of items) {
                 const product = products.find(p => p.id === item.productId)!;
                 await tx.stock.update({
                     where: { productId: item.productId },
                     data: {
                         available: { decrement: item.quantity },
-                        reserved:  { increment: item.quantity }
+                        reserved: { increment: item.quantity }
                     }
                 });
                 await tx.stockMovement.create({
@@ -126,20 +115,21 @@ export class SaleService {
                     }
                 });
             }
-            
+
             return newSale;
         });
-        await auditLogService.log({
-             userId,
-             action: 'SALE_CREATED',
-             correlationId: sale.correlationId,
-             details: {
-              saleId: sale.id,
-              total: sale.total,
-              itemCount: items.length
-               }    
 
-            });
+        // ✅ Log FORA da transaction — 'sale' já resolvido
+        await auditLogService.log({
+            userId,
+            action: 'SALE_CREATED',
+            correlationId: sale.correlationId,
+            details: {
+                saleId: sale.id,
+                total: sale.total,
+                itemCount: items.length
+            }
+        });
 
         return { data: sale, message: "Venda criada e estoque reservado" };
     }
@@ -159,7 +149,6 @@ export class SaleService {
             throw new AppError("Venda não está pendente de pagamento", 409);
         }
 
-        // ✅ Idempotency — evita processar o mesmo pagamento duas vezes
         const existingPayment = await prisma.payment.findUnique({
             where: { idempotencyKey }
         });
@@ -168,9 +157,8 @@ export class SaleService {
             throw new AppError("Pagamento já processado", 409);
         }
 
+        // ✅ Transaction apenas com operações críticas
         const result = await prisma.$transaction(async (tx) => {
-
-            // 1. Confirma o pagamento
             const payment = await tx.payment.create({
                 data: {
                     saleId,
@@ -181,13 +169,11 @@ export class SaleService {
                 }
             });
 
-            // 2. Atualiza status da venda
             await tx.sale.update({
                 where: { id: saleId },
                 data: { status: 'CONFIRMED' }
             });
 
-            // 3. Baixa definitiva no estoque (sai do reserved)
             for (const item of sale.items) {
                 const stock = await tx.stock.findUnique({
                     where: { productId: item.productId }
@@ -210,16 +196,18 @@ export class SaleService {
 
             return payment;
         });
-            await auditLogService.log({
-                userId: sale.userId,
-                action: 'PAYMENT_CONFIRMED',
-                correlationId: sale.correlationId,
-                details: {
-                    paymentId: result.id,
-                    method,
-                    amount: sale.total
-    }
-});
+
+        // ✅ Log FORA da transaction
+        await auditLogService.log({
+            userId: sale.userId,
+            action: 'PAYMENT_CONFIRMED',
+            correlationId: sale.correlationId,
+            details: {
+                paymentId: result.id,
+                method,
+                amount: sale.total
+            }
+        });
 
         return { data: result, message: "Pagamento confirmado e estoque baixado" };
     }
@@ -243,15 +231,13 @@ export class SaleService {
             throw new AppError("Venda já está cancelada", 409);
         }
 
+        // ✅ Transaction apenas com operações críticas
         await prisma.$transaction(async (tx) => {
-
-            // 1. Cancela a venda
             await tx.sale.update({
                 where: { id: saleId },
                 data: { status: 'CANCELLED' }
             });
 
-            // 2. Libera o estoque reservado de volta ao disponível
             for (const item of sale.items) {
                 const stock = await tx.stock.findUnique({
                     where: { productId: item.productId }
@@ -261,7 +247,7 @@ export class SaleService {
                     where: { productId: item.productId },
                     data: {
                         available: { increment: item.quantity },
-                        reserved:  { decrement: item.quantity }
+                        reserved: { decrement: item.quantity }
                     }
                 });
 
@@ -274,14 +260,15 @@ export class SaleService {
                     }
                 });
             }
-        }); 
-        
+        });
+
+        // ✅ Log FORA da transaction
         await auditLogService.log({
-                userId: sale.userId,
-                action: 'SALE_CANCELLED',
-                correlationId: sale.correlationId,
-                details: { saleId }
-            });
+            userId: sale.userId,
+            action: 'SALE_CANCELLED',
+            correlationId: sale.correlationId,
+            details: { saleId }
+        });
 
         return { data: null, message: "Venda cancelada e estoque liberado" };
     }
@@ -291,9 +278,9 @@ export class SaleService {
             orderBy: { createdAt: 'desc' },
             include: {
                 customer: { select: { id: true, name: true } },
-                user:     { select: { id: true, name: true } },
-                payment:  { select: { method: true, status: true } },
-                items:    { select: { quantity: true, price: true } }
+                user: { select: { id: true, name: true } },
+                payment: { select: { method: true, status: true } },
+                items: { select: { quantity: true, price: true } }
             }
         });
 
@@ -309,8 +296,8 @@ export class SaleService {
             where: { id: saleId },
             include: {
                 customer: { select: { id: true, name: true, document: true } },
-                user:     { select: { id: true, name: true } },
-                payment:  true,
+                user: { select: { id: true, name: true } },
+                payment: true,
                 items: {
                     include: {
                         product: { select: { id: true, name: true, sku: true } }
