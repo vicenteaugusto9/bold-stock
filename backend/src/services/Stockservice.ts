@@ -5,7 +5,7 @@
     productId: string
     type :'ENTRY' | 'EXIT' | 'RESERVE' | 'RELEASE' | 'ADJUSTMENT' 
     quantity : number
-    correlationId: string
+    correlationId?: string
  }
 
  export class StockService {

@@ -11,7 +11,9 @@
     "migrate:prod": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -38,6 +40,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "jest": "^30.4.2",
+    "jest-mock-extended": "^4.0.1",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
