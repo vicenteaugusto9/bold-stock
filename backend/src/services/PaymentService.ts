@@ -1,5 +1,8 @@
 import prisma from '../lib/prisma';
 import { AppError } from '../shared/errors';
+import { AuditLogService } from './AuditLogService';
+
+const auditLogService = new AuditLogService(); // ✅ parênteses
 
 interface ProcessPaymentDTO {
     saleId: string;
@@ -24,7 +27,6 @@ export class PaymentService {
             throw new AppError("Venda não está pendente de pagamento", 409);
         }
 
-        // ✅ Idempotency — evita processar o mesmo pagamento duas vezes
         const existingPayment = await prisma.payment.findUnique({
             where: { idempotencyKey }
         });
@@ -33,9 +35,8 @@ export class PaymentService {
             return { data: existingPayment, message: "Pagamento já processado anteriormente" };
         }
 
+        // ✅ Transaction apenas com operações críticas
         const result = await prisma.$transaction(async (tx) => {
-
-            // 1. Cria o pagamento
             const payment = await tx.payment.create({
                 data: {
                     saleId,
@@ -46,13 +47,11 @@ export class PaymentService {
                 }
             });
 
-            // 2. Confirma a venda
             await tx.sale.update({
                 where: { id: saleId },
                 data: { status: 'CONFIRMED' }
             });
 
-            // 3. Baixa definitiva no estoque
             const saleItems = await tx.saleItem.findMany({
                 where: { saleId },
                 include: {
@@ -77,6 +76,18 @@ export class PaymentService {
             }
 
             return payment;
+        });
+
+        // ✅ Log FORA da transaction — adicionado
+        await auditLogService.log({
+            userId: sale.userId,
+            action: 'PAYMENT_CONFIRMED',
+            correlationId: sale.correlationId,
+            details: {
+                paymentId: result.id,
+                method,
+                amount: sale.total
+            }
         });
 
         return { data: result, message: "Pagamento confirmado com sucesso" };
@@ -107,21 +118,18 @@ export class PaymentService {
             throw new AppError("Apenas pagamentos confirmados podem ser estornados", 409);
         }
 
+        // ✅ Transaction apenas com operações críticas
         await prisma.$transaction(async (tx) => {
-
-            // 1. Estorna o pagamento
             await tx.payment.update({
                 where: { id: paymentId },
                 data: { status: 'REFUNDED' }
             });
 
-            // 2. Cancela a venda
             await tx.sale.update({
                 where: { id: payment.saleId },
                 data: { status: 'CANCELLED' }
             });
 
-            // 3. Devolve ao estoque disponível
             for (const item of payment.sale.items) {
                 await tx.stock.update({
                     where: { productId: item.productId },
@@ -136,6 +144,17 @@ export class PaymentService {
                         correlationId: payment.sale.correlationId
                     }
                 });
+            }
+        });
+
+        // ✅ Log FORA da transaction
+        await auditLogService.log({
+            userId: payment.sale.userId,
+            action: 'PAYMENT_REFUNDED',
+            correlationId: payment.sale.correlationId,
+            details: {
+                paymentId,
+                amount: payment.amount
             }
         });
 

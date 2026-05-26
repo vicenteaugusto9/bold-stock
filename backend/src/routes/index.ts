@@ -9,6 +9,7 @@ import customerRoutes from "./customer.routes";
 import stockRoutes from "./stock.routes";
 import saleRoutes from "./sale.routes";
 import paymentRoutes from "./payment.routes";
+import auditLogRoutes from "./auditLog.routes";
 
 
 
@@ -28,5 +29,5 @@ routes.use('/customers',customerRoutes)
 routes.use('/stock', stockRoutes);
 routes.use('/sales', saleRoutes);
 routes.use('/payments', paymentRoutes);
-
+routes.use('/audit', auditLogRoutes);
 export default routes;
