@@ -5,6 +5,7 @@ module.exports = {
     rootDir: './src',
     testMatch: ['**/__tests__/**/*.test.ts'],
     clearMocks: true,
+    setupFiles: ['<rootDir>/__tests__/setup.ts'], // ✅ carrega antes de tudo
     globals: {
         'ts-jest': {
             tsconfig: './tsconfig.test.json'

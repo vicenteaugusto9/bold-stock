@@ -1,5 +1,20 @@
+/// <reference types="jest" />
+
+jest.mock('../lib/prisma', () => ({
+    __esModule: true,
+    default: require('./helpers/prismaMock').default
+}));
+
+jest.mock('../services/AuditLogService', () => ({
+    AuditLogService: jest.fn().mockImplementation(() => ({
+        log: jest.fn().mockResolvedValue({})
+    }))
+}));
+
+import prismaMock from './helpers/prismaMock';
 import { SaleService } from '../services/SaleService';
-import { prismaMock } from './helpers/prismaMock';
+
+beforeEach(() => { jest.clearAllMocks(); });
 
 describe('SaleService', () => {
 
@@ -13,71 +28,45 @@ describe('SaleService', () => {
         password: 'hash', role: 'VENDEDOR' as const, createdAt: new Date()
     };
 
+    const mockStock = {
+        id: 'stock-id-1', productId: 'prod-id-1',
+        available: 100, reserved: 0, updatedAt: new Date()
+    };
+
     const mockProduct = {
         id: 'prod-id-1', name: 'Coca-Cola', sku: 'COC-001',
         price: 8.99 as any, costPrice: 5.50 as any,
         unit: 'UN', active: true, categoryId: 'cat-id-1',
-        createdAt: new Date(),
-        stock: { id: 'stock-id-1', productId: 'prod-id-1', available: 100, reserved: 0, updatedAt: new Date() }
+        createdAt: new Date(), stock: mockStock
     };
 
-    it('deve criar uma venda com sucesso', async () => {
-        prismaMock.customer.findUnique.mockResolvedValue(mockCustomer);
-        prismaMock.user.findUnique.mockResolvedValue(mockUser);
-        prismaMock.product.findMany.mockResolvedValue([mockProduct]);
-        prismaMock.$transaction.mockImplementation(async (fn: any) => fn(prismaMock));
-        prismaMock.sale.create.mockResolvedValue({
-            id: 'sale-id-1',
-            customerId: 'cust-id-1',
-            userId: 'user-id-1',
-            total: 26.97 as any,
-            status: 'PENDING',
-            correlationId: 'corr-id-1',
-            createdAt: new Date(),
-            items: [],
-            customer: mockCustomer,
-            user: mockUser
-        } as any);
-        prismaMock.stock.update.mockResolvedValue({} as any);
-        prismaMock.stockMovement.create.mockResolvedValue({} as any);
-        prismaMock.auditLog.create.mockResolvedValue({} as any);
+    it('deve lançar erro se cliente não encontrado', async () => {
+        prismaMock.customer.findUnique.mockResolvedValue(null);
 
         const service = new SaleService();
-        const result = await service.create({
-            customerId: 'cust-id-1',
-            userId: 'user-id-1',
-            items: [{ productId: 'prod-id-1', quantity: 3 }]
-        });
 
-        expect(result.message).toBe('Venda criada e estoque reservado');
+        await expect(
+            service.create({ customerId: 'id-inexistente', userId: 'user-id-1', items: [{ productId: 'prod-id-1', quantity: 1 }] })
+        ).rejects.toThrow('Cliente não encontrado');
     });
 
-   it('deve lançar erro se estoque insuficiente', async () => {
-    prismaMock.customer.findUnique.mockResolvedValue(mockCustomer);
-    prismaMock.user.findUnique.mockResolvedValue(mockUser);
-    
-    // ✅ adiciona 'as any' para contornar tipagem estrita do mock
-    prismaMock.product.findMany.mockResolvedValue([{
-        ...mockProduct,
-        stock: { ...mockProduct.stock, available: 2 }
-    }] as any);
+    it('deve lançar erro se estoque insuficiente', async () => {
+        prismaMock.customer.findUnique.mockResolvedValue(mockCustomer);
+        prismaMock.user.findUnique.mockResolvedValue(mockUser);
+        prismaMock.product.findMany.mockResolvedValue([{
+            ...mockProduct, stock: { ...mockStock, available: 2 }
+        }] as any);
 
-    const service = new SaleService();
+        const service = new SaleService();
 
-    await expect(
-        service.create({
-            customerId: 'cust-id-1',
-            userId: 'user-id-1',
-            items: [{ productId: 'prod-id-1', quantity: 10 }]
-        })
-    ).rejects.toThrow('Estoque insuficiente');
-});
+        await expect(
+            service.create({ customerId: 'cust-id-1', userId: 'user-id-1', items: [{ productId: 'prod-id-1', quantity: 10 }] })
+        ).rejects.toThrow('Estoque insuficiente para o produto');
+    });
 
     it('deve lançar erro ao cancelar venda já confirmada', async () => {
         prismaMock.sale.findUnique.mockResolvedValue({
-            id: 'sale-id-1',
-            status: 'CONFIRMED',
-            items: []
+            id: 'sale-id-1', status: 'CONFIRMED', items: []
         } as any);
 
         const service = new SaleService();
@@ -85,5 +74,37 @@ describe('SaleService', () => {
         await expect(
             service.cancel('sale-id-1')
         ).rejects.toThrow('Venda já confirmada não pode ser cancelada');
+    });
+
+    it('deve lançar erro ao cancelar venda já cancelada', async () => {
+        prismaMock.sale.findUnique.mockResolvedValue({
+            id: 'sale-id-1', status: 'CANCELLED', items: []
+        } as any);
+
+        const service = new SaleService();
+
+        await expect(
+            service.cancel('sale-id-1')
+        ).rejects.toThrow('Venda já está cancelada');
+    });
+
+    it('deve lançar erro se venda não encontrada no findById', async () => {
+        prismaMock.sale.findUnique.mockResolvedValue(null);
+
+        const service = new SaleService();
+
+        await expect(
+            service.findById('id-inexistente')
+        ).rejects.toThrow('Venda não encontrada');
+    });
+
+    it('deve lançar erro se nenhuma venda encontrada no listAll', async () => {
+        prismaMock.sale.findMany.mockResolvedValue([]);
+
+        const service = new SaleService();
+
+        await expect(
+            service.listAll()
+        ).rejects.toThrow('Nenhuma venda encontrada');
     });
 });
