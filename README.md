@@ -162,4 +162,4 @@ A documentação da API está disponível em:
 
 ---
 
-Produced by **Zenith Software** - **Gomezz.Dev**
+Produced by **Zenith Studios** - **Gomezz.Dev**
