@@ -1,0 +1,99 @@
+/products:
+  get:
+    tags: [Products]
+    summary: Listar produtos ativos
+    responses:
+      200:
+        description: Lista de produtos
+
+  post:
+    tags: [Products]
+    summary: Criar produto
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, sku, price, costPrice, categoryId]
+            properties:
+              name:
+                type: string
+                example: Coca-Cola 2L
+              sku:
+                type: string
+                example: COC-2L-001
+              price:
+                type: number
+                example: 8.99
+              costPrice:
+                type: number
+                example: 5.50
+              unit:
+                type: string
+                example: UN
+              categoryId:
+                type: string
+              initialStock:
+                type: number
+                example: 100
+    responses:
+      201:
+        description: Produto criado com sucesso
+      409:
+        description: SKU já cadastrado
+
+/products/{id}:
+  get:
+    tags: [Products]
+    summary: Buscar produto por ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Produto encontrado
+      404:
+        description: Produto não encontrado
+
+  put:
+    tags: [Products]
+    summary: Atualizar produto
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              price: { type: number }
+              costPrice: { type: number }
+              unit: { type: string }
+    responses:
+      200:
+        description: Produto atualizado
+
+/products/{id}/deactivate:
+  patch:
+    tags: [Products]
+    summary: Desativar produto
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Produto desativado
+      409:
+        description: Produto já está inativo

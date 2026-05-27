@@ -1,0 +1,65 @@
+/categories:
+  get:
+    tags: [Categories]
+    summary: Listar categorias
+    responses:
+      200:
+        description: Lista de categorias
+
+  post:
+    tags: [Categories]
+    summary: Criar categoria
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+                example: Bebidas
+    responses:
+      201:
+        description: Categoria criada
+      409:
+        description: Categoria já existe
+
+/categories/{id}:
+  put:
+    tags: [Categories]
+    summary: Atualizar categoria
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string, example: Bebidas e Sucos }
+    responses:
+      200:
+        description: Categoria atualizada
+      404:
+        description: Categoria não encontrada
+
+  delete:
+    tags: [Categories]
+    summary: Deletar categoria
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Categoria deletada
+      409:
+        description: Categoria possui produtos vinculados

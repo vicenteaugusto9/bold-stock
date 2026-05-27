@@ -1,0 +1,59 @@
+/payments:
+  get:
+    tags: [Payments]
+    summary: Listar todos os pagamentos
+    responses:
+      200:
+        description: Lista de pagamentos
+
+  post:
+    tags: [Payments]
+    summary: Processar pagamento
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [saleId, method, idempotencyKey]
+            properties:
+              saleId: { type: string }
+              method:
+                type: string
+                enum: [PIX, CARD, CASH]
+              idempotencyKey:
+                type: string
+                example: chave-unica-uuid
+    responses:
+      201:
+        description: Pagamento confirmado
+
+/payments/{id}:
+  get:
+    tags: [Payments]
+    summary: Buscar pagamento por ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Pagamento encontrado
+
+/payments/{id}/refund:
+  patch:
+    tags: [Payments]
+    summary: Estornar pagamento
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Pagamento estornado
+      409:
+        description: Pagamento não confirmado

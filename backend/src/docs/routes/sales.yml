@@ -1,0 +1,90 @@
+/sales:
+  get:
+    tags: [Sales]
+    summary: Listar todas as vendas
+    responses:
+      200:
+        description: Lista de vendas
+
+  post:
+    tags: [Sales]
+    summary: Criar venda
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [customerId, items]
+            properties:
+              customerId:
+                type: string
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    productId: { type: string }
+                    quantity: { type: number, example: 2 }
+    responses:
+      201:
+        description: Venda criada e estoque reservado
+      409:
+        description: Estoque insuficiente
+
+/sales/{id}:
+  get:
+    tags: [Sales]
+    summary: Buscar venda por ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Venda encontrada
+
+/sales/{id}/payment:
+  patch:
+    tags: [Sales]
+    summary: Confirmar pagamento
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [method, idempotencyKey]
+            properties:
+              method:
+                type: string
+                enum: [PIX, CARD, CASH]
+              idempotencyKey:
+                type: string
+                example: chave-unica-uuid
+    responses:
+      200:
+        description: Pagamento confirmado
+
+/sales/{id}/cancel:
+  patch:
+    tags: [Sales]
+    summary: Cancelar venda
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Venda cancelada e estoque liberado
+      409:
+        description: Venda já confirmada

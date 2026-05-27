@@ -1,0 +1,92 @@
+/customers:
+  get:
+    tags: [Customers]
+    summary: Listar clientes ativos
+    responses:
+      200:
+        description: Lista de clientes
+
+  post:
+    tags: [Customers]
+    summary: Criar cliente
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, document]
+            properties:
+              name:
+                type: string
+                example: Maria Silva
+              document:
+                type: string
+                example: 529.982.247-25
+              email:
+                type: string
+                example: maria@email.com
+              phone:
+                type: string
+                example: (85) 99999-1111
+    responses:
+      201:
+        description: Cliente criado
+      400:
+        description: CPF/CNPJ inválido
+      409:
+        description: Documento já cadastrado
+
+/customers/{id}:
+  get:
+    tags: [Customers]
+    summary: Buscar cliente por ID
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Cliente encontrado
+      404:
+        description: Cliente não encontrado
+
+  put:
+    tags: [Customers]
+    summary: Atualizar cliente
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              email: { type: string }
+              phone: { type: string }
+    responses:
+      200:
+        description: Cliente atualizado
+
+/customers/{id}/deactivate:
+  patch:
+    tags: [Customers]
+    summary: Desativar cliente
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Cliente desativado
+      409:
+        description: Cliente possui vendas vinculadas

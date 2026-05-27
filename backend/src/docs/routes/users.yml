@@ -1,0 +1,81 @@
+/users:
+  get:
+    tags: [Users]
+    summary: Listar todos os usuários
+    responses:
+      200:
+        description: Lista de usuários
+      404:
+        description: Nenhum usuário encontrado
+
+  post:
+    tags: [Users]
+    summary: Criar usuário
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [name, email, password]
+            properties:
+              name:
+                type: string
+                example: João Silva
+              email:
+                type: string
+                example: joao@boldstock.com
+              password:
+                type: string
+                example: Joao@123
+              role:
+                type: string
+                enum: [ADMIN, VENDEDOR, ESTOQUISTA]
+                example: VENDEDOR
+    responses:
+      201:
+        description: Usuário criado com sucesso
+      409:
+        description: Email já cadastrado
+
+/users/{id}:
+  put:
+    tags: [Users]
+    summary: Atualizar usuário
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              email: { type: string }
+              password: { type: string }
+    responses:
+      200:
+        description: Usuário atualizado
+      404:
+        description: Usuário não encontrado
+
+  delete:
+    tags: [Users]
+    summary: Deletar usuário
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Usuário deletado
+      403:
+        description: Não permitido deletar ADMIN
+      404:
+        description: Usuário não encontrado
