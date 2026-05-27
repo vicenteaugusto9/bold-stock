@@ -65,4 +65,36 @@ describe('CategoryService', () => {
             service.updateCategory('id-inexistente', 'Novo Nome')
         ).rejects.toThrow('Categoria não encontrada.');
     });
+    it('deve listar categorias com sucesso', async () => {
+    prismaMock.category.findMany.mockResolvedValue([
+        { id: 'cat-id-1', name: 'Bebidas', _count: { products: 3 } }
+    ] as any);
+
+    const service = new CategoryService();
+    const result = await service.listAllCategories();
+
+    expect(result.message).toBe('Categorias listadas com sucesso!');
+});
+
+it('deve atualizar categoria com sucesso', async () => {
+    prismaMock.category.findUnique.mockResolvedValue({ id: 'cat-id-1', name: 'Bebidas' });
+    prismaMock.category.update.mockResolvedValue({ id: 'cat-id-1', name: 'Bebidas e Sucos' });
+
+    const service = new CategoryService();
+    const result = await service.updateCategory('cat-id-1', 'Bebidas e Sucos');
+
+    expect(result.message).toBe('Categoria atualizada com sucesso!');
+});
+
+it('deve deletar categoria com sucesso', async () => {
+    prismaMock.category.findUnique.mockResolvedValue({
+        id: 'cat-id-1', name: 'Bebidas', _count: { products: 0 }
+    } as any);
+    prismaMock.category.delete.mockResolvedValue({} as any);
+
+    const service = new CategoryService();
+    const result = await service.deleteCategory('cat-id-1');
+
+    expect(result.message).toBe('Categoria deletada com sucesso!');
+});
 });

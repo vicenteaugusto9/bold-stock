@@ -79,4 +79,55 @@ describe('UserService', () => {
             service.update('id-inexistente', { name: 'Novo Nome' })
         ).rejects.toThrow('Usuário não encontrado');
     });
+    it('deve criar usuário com sucesso', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null);
+    prismaMock.user.create.mockResolvedValue({
+        id: 'user-id-2', name: 'Vendedor', email: 'vendedor@boldstock.com', role: 'VENDEDOR'
+    } as any);
+
+    const service = new UserService();
+    const result = await service.create({
+        name: 'Vendedor', email: 'vendedor@boldstock.com', password: 'Senha@123'
+    });
+
+    expect(result.message).toBe('Usuário criado com sucesso');
+});
+
+it('deve listar usuários com sucesso', async () => {
+    prismaMock.user.findMany.mockResolvedValue([mockUser]);
+
+    const service = new UserService();
+    const result = await service.listAll();
+
+    expect(result.message).toBe('Usuários listados com sucesso');
+    expect(result.data).toHaveLength(1);
+});
+
+it('deve deletar usuário com sucesso', async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ ...mockUser, role: 'VENDEDOR' as const });
+    prismaMock.user.count.mockResolvedValue(2);
+    prismaMock.user.delete.mockResolvedValue({} as any);
+
+    const service = new UserService();
+    const result = await service.delete('user-id-1');
+
+    expect(result.message).toBe('Usuário deletado com sucesso');
+});
+it('deve atualizar usuário com sucesso', async () => {
+    prismaMock.user.findUnique.mockResolvedValue(mockUser);
+    prismaMock.user.update.mockResolvedValue({ ...mockUser, name: 'Admin Atualizado' } as any);
+
+    const service = new UserService();
+    const result = await service.update('user-id-1', { name: 'Admin Atualizado' });
+
+    expect(result.message).toBe('Usuário atualizado com sucesso');
+});
+
+it('deve lançar erro ao listar usuários vazio', async () => {
+    prismaMock.user.findMany.mockResolvedValue([]);
+
+    const service = new UserService();
+
+    await expect(service.listAll()).rejects.toThrow('Nenhum usuário encontrado');
+});
 });
