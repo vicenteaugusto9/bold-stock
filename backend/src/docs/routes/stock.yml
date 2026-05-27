@@ -1,0 +1,79 @@
+/stock/{productId}:
+  get:
+    tags: [Stock]
+    summary: Ver estoque de um produto
+    parameters:
+      - in: path
+        name: productId
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Estoque encontrado
+      404:
+        description: Estoque não encontrado
+
+/stock/{productId}/movements:
+  get:
+    tags: [Stock]
+    summary: Histórico de movimentações
+    parameters:
+      - in: path
+        name: productId
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Movimentações encontradas
+
+/stock/low:
+  get:
+    tags: [Stock]
+    summary: Produtos com estoque baixo
+    parameters:
+      - in: query
+        name: threshold
+        schema:
+          type: number
+          example: 10
+    responses:
+      200:
+        description: Lista de produtos com estoque baixo
+
+/stock/entry:
+  post:
+    tags: [Stock]
+    summary: Registrar entrada de estoque
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId: { type: string }
+              quantity: { type: number, example: 50 }
+    responses:
+      200:
+        description: Entrada registrada
+
+/stock/adjustment:
+  post:
+    tags: [Stock]
+    summary: Ajuste manual de estoque
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId: { type: string }
+              quantity: { type: number, example: 30 }
+    responses:
+      200:
+        description: Estoque ajustado

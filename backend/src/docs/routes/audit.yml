@@ -1,0 +1,35 @@
+/audit:
+  get:
+    tags: [Audit]
+    summary: Listar todos os logs
+    responses:
+      200:
+        description: Lista de logs
+
+/audit/user/{userId}:
+  get:
+    tags: [Audit]
+    summary: Logs de um usuário
+    parameters:
+      - in: path
+        name: userId
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Logs encontrados
+
+/audit/correlation/{correlationId}:
+  get:
+    tags: [Audit]
+    summary: Trilha completa de uma operação
+    parameters:
+      - in: path
+        name: correlationId
+        required: true
+        schema:
+          type: string
+    responses:
+      200:
+        description: Logs da operação encontrados
