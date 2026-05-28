@@ -1,6 +1,6 @@
 import { hash } from 'bcrypt';
 import prisma from '../lib/prisma';
-import { Role } from '../generated/prisma';
+import { Role } from '@prisma/client';
 
 interface CreateUserDTO {
     name: string;
