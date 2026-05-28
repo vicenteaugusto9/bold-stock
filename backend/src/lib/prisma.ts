@@ -5,7 +5,7 @@ import pg from 'pg';
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-  console.error("❌ Erro catastrófico: DATABASE_URL não foi encontrada nas variáveis de ambiente!");
+  console.error("❌ Erro: DATABASE_URL não foi configurada!");
 }
 
 const pool = new pg.Pool({ connectionString });
