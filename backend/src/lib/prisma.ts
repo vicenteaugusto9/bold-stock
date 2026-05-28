@@ -1,7 +1,15 @@
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '@prisma/client'; // Importação padrão corrigida
 import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  console.error("❌ Erro: DATABASE_URL não foi configurada!");
+}
+
+const pool = new pg.Pool({ connectionString });
+const adapter = new PrismaPg(pool);
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
