@@ -8,9 +8,16 @@ const options: swaggerJsdoc.Options = {
             version: '1.0.0',
             description: 'Documentação completa da API do Flow ERP'
         },
-        servers: [
-            { url: 'http://localhost:3000/api/v1', description: 'Desenvolvimento' }
-        ],
+       servers: [
+    { 
+        url: 'https://flow-api-4xg1.onrender.com/api/v1', 
+        description: 'Produção' 
+    },
+    { 
+        url: 'http://localhost:3000/api/v1', 
+        description: 'Desenvolvimento' 
+    }
+],
         components: {
             securitySchemes: {
                 bearerAuth: {
