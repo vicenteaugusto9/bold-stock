@@ -1,6 +1,5 @@
 import prisma from "../lib/prisma";
-import { Decimal } from "../generated/prisma/runtime/client";
-// REFACT: Importamos a nossa classe de erro customizada para centralizar as respostas HTTP.
+
 import { AppError } from "../shared/errors";
 
 interface CreateProductDTO {
