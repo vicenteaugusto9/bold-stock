@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Role } from '../generated/prisma';
+import { Role } from '@prisma/client';
 
 export function isAuthorized(...roles: Role[]) {
     return (req: Request, res: Response, next: NextFunction) => {

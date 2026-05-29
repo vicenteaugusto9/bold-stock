@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { mockDeep } from 'jest-mock-extended';
 
 // ✅ sem jest.mock aqui — o mock fica em cada arquivo de teste
