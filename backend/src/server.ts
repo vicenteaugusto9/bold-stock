@@ -1,10 +1,14 @@
 import 'dotenv/config';
 import express from "express";
+import cors from "cors"; // 1. IMPORTAÇÃO DO CORS
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger';
 import routes from "./routes/";
 
 const app = express();
+
+// 2. ATIVAÇÃO DO CORS (Libera requisições do Swagger local e do seu Frontend)
+app.use(cors());
 
 app.use(express.json());
 

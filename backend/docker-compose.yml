@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Banco de dados PostgreSQL
+  # Banco de dados PostgreSQL local
   db:
     image: postgres:16-alpine
     container_name: bold-stock-db
@@ -14,14 +14,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ogomezz_dev}"]
+      # Corrigido para garantir que o ping de saúde teste a base correta
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-ogomezz_dev} -d $${POSTGRES_DB:-bold_stock}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - bold-stock-network
 
-  # Aplicação Backend
+  # Aplicação Backend (API)
   api:
     build:
       context: .
@@ -31,30 +32,33 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ogomezz_dev}:${POSTGRES_PASSWORD:-zenithvG2026}@db:5432/${POSTGRES_DB:-bold_stock}
-      PORT: 3000
+      # Ajustado o host de 'db' para 'bold-stock-db' para alinhar com o mapeamento do container na rede
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ogomezz_dev}:${POSTGRES_PASSWORD:-zenithvG2026}@bold-stock-db:5432/${POSTGRES_DB:-bold_stock}
+      PORT: 3333
       NODE_ENV: ${NODE_ENV:-development}
     ports:
-      - "3000:3000"
-    volumes:
-      # Para desenvolvimento - comentar em produção
-      - .:/app
-      - /app/node_modules
-      - /app/dist
+      - "3333:3333"
+    # Volumes comentados para desenvolvimento isolado, evitando conflito de escrita do Windows no Linux
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
+    #   - /app/dist
     networks:
       - bold-stock-network
-    command: npm run dev
+    command: npm start
 
-  # Prisma Studio (para visualizar o banco de dados)
+  # Prisma Studio (Interface visual do Banco de Dados)
   prisma-studio:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: bold-stock-prisma-studio
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-ogomezz_dev}:${POSTGRES_PASSWORD:-zenithvG2026}@db:5432/${POSTGRES_DB:-bold_stock}
+      # Ajustado o host para garantir comunicação direta com o banco local
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ogomezz_dev}:${POSTGRES_PASSWORD:-zenithvG2026}@bold-stock-db:5432/${POSTGRES_DB:-bold_stock}
     ports:
       - "5555:5555"
     networks:

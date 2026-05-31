@@ -1,4 +1,6 @@
-# Stage 1: Build
+# ==========================================
+# Estágio 1: Build e Compilação
+# ==========================================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -8,28 +10,35 @@ RUN npm ci
 
 COPY . .
 
-# ESSENCIAL: Gerar tipos e compilar ANTES de fechar este estágio
+# Gera os tipos do Prisma e compila o TypeScript para JavaScript
 RUN npx prisma generate
 RUN npm run build
 
-# Stage 2: Runtime
+# ==========================================
+# Estágio 2: Ambiente de Execução (Runtime)
+# ==========================================
 FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package*.json ./
-# Omit dev dependencies para manter a imagem leve para sua PME
+# Instala apenas as dependências de produção para manter a imagem leve
 RUN npm ci --omit=dev
 
-# Agora a pasta /app/dist existe e pode ser copiada
+# CORREÇÃO CRÍTICA: Traz a pasta dist compilação do Estágio 1
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/src/generated/prisma ./src/generated/prisma
+
+# Traz os artefatos e clientes gerados pelo Prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
 COPY prisma ./prisma
 
-EXPOSE 3000
+# Porta interna que a aplicação vai rodar dentro do container
+EXPOSE 3333
 
+# Monitoramento de saúde do container
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+  CMD node -e "require('http').get('http://localhost:3333/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# CMD é sempre a última instrução
+# Comando padrão para iniciar a aplicação
 CMD ["npm", "start"]

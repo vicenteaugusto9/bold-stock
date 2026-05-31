@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/userService";
+import { AppError } from "../shared/errors";
+import { json } from "node:stream/consumers";
 
 export class UserController {
   // ✅ Melhoria 1: instancia uma única vez
@@ -40,6 +42,18 @@ export class UserController {
         return res.status(404).json({ error: error.message });
       }
       return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+  async findId(req: Request,res: Response) {
+    try{
+      const id = req.params.id as string
+      const result = await this.userService.findID(id)
+      return res.status(200).json(result)
+    } catch (error){
+      if(error instanceof AppError){
+        return res.status(error.statusCode).json({error:error.message})
+        }
+      return res.status(500).json({error:'Erro interno do servidor'})
     }
   }
 

@@ -61,6 +61,25 @@ export class UserService {
         return { data: users, message: "Usuários listados com sucesso" };
     }
 
+    async findID(id: string): Promise<ServiceResponse<object>> {
+        const user = await prisma.user.findUnique({
+            where: {id},
+            select: {
+                id: true,
+                name: true ,
+                email:true,
+                role: true,
+                createdAt: true
+            }
+        })
+         if (!user) {
+            throw new Error("Usuário não encontrado");
+        }
+        
+        return {data: user , message:'Usuario encontrado com sucesso'}
+
+    }
+
     async update(id: string, data: Partial<CreateUserDTO>): Promise<ServiceResponse<object>> {
         const user = await prisma.user.findUnique({
             where: { id }
